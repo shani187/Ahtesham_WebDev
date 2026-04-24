@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Registration Form</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      padding: 30px 16px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* Autofill Banner */
+    .autofill-banner {
+      display: none;
+      background-color: #e8f4fd;
+      border: 1px solid #90caf9;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #1565c0;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .autofill-banner.show {
+      display: flex;
+    }
+    .autofill-banner button {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* Form Group */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      color: #444;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="file"],
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #333;
+      background-color: #fafafa;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #1976d2;
+      background-color: #fff;
+    }
+
+    input.valid   { border-color: #4caf50; }
+    input.invalid { border-color: #e53935; }
+    select.invalid { border-color: #e53935; }
+
+    .error {
+      display: block;
+      font-size: 12px;
+      color: #e53935;
+      margin-top: 4px;
+      min-height: 16px;
+    }
+
+    /* Password Strength */
+    .strength-bars {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .bar {
+      flex: 1;
+      height: 5px;
+      background-color: #ddd;
+      border-radius: 3px;
+    }
+    .bar.weak   { background-color: #e53935; }
+    .bar.fair   { background-color: #fb8c00; }
+    .bar.good   { background-color: #fdd835; }
+    .bar.strong { background-color: #43a047; }
+
+    .strength-label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* Image Preview */
+    .image-preview {
+      margin-top: 10px;
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 12px;
+      color: #aaa;
+      text-align: center;
+    }
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Submit Button */
+    #submitBtn {
+      width: 100%;
+      padding: 12px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    #submitBtn:hover:not(:disabled) {
+      background-color: #1565c0;
+    }
+    #submitBtn:disabled {
+      background-color: #90caf9;
+      cursor: not-allowed;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal {
+      background: white;
+      padding: 28px;
+      border-radius: 10px;
+      max-width: 420px;
+      width: 90%;
+    }
+    .modal h3 {
+      margin-bottom: 16px;
+      color: #333;
+    }
+    .modal table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .modal table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .modal table td:first-child {
+      font-weight: bold;
+      color: #555;
+      width: 40%;
+    }
+    .modal button {
+      width: 100%;
+      padding: 10px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .modal button:hover {
+      background-color: #1565c0;
+    }
+
+    /* Note box */
+    .note-box {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #5d4037;
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+    .note-box strong { color: #e65100; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Create an Account</h2>
+  <p class="subtitle">Fill in the details below to register</p>
+
+  <!-- Autofill Banner -->
+  <div class="autofill-banner" id="autofillBanner">
+    <span>Saved data found!</span>
+    <button onclick="autoFillForm()">Auto-fill</button>
+  </div>
+
+  <!-- Name -->
+  <div class="form-group">
+    <label for="name">Full Name *</label>
+    <input type="text" id="name" placeholder="Enter your full name" oninput="validateName()" />
+    <span class="error" id="nameError"></span>
+  </div>
+
+  <!-- Email -->
+  <div class="form-group">
+    <label for="email">Email Address *</label>
+    <input type="email" id="email" placeholder="Enter your email" oninput="validateEmail()" />
+    <span class="error" id="emailError"></span>
+  </div>
+
+  <!-- Password -->
+  <div class="form-group">
+    <label for="password">Password *</label>
+    <input type="password" id="password" placeholder="Create a password" oninput="validatePassword()" />
+    <div class="strength-bars">
+      <div class="bar" id="bar1"></div>
+      <div class="bar" id="bar2"></div>
+      <div class="bar" id="bar3"></div>
+      <div class="bar" id="bar4"></div>
+    </div>
+    <span class="strength-label" id="strengthLabel"></span>
+    <span class="error" id="passwordError"></span>
+  </div>
+
+  <!-- Phone -->
+  <div class="form-group">
+    <label for="phone">Phone Number *</label>
+    <input type="tel" id="phone" placeholder="e.g. +92 300 0000000" oninput="validatePhone()" />
+    <span class="error" id="phoneError"></span>
+  </div>
+
+  <!-- Date of Birth -->
+  <div class="form-group">
+    <label for="dob">Date of Birth *</label>
+    <input type="date" id="dob" oninput="validateDob()" />
+    <span class="error" id="dobError"></span>
+  </div>
+
+  <!-- Country -->
+  <div class="form-group">
+    <label for="country">Country *</label>
+    <select id="country" onchange="loadCities(); validateCountry()">
+      <option value="">-- Select Country --</option>
+      <option value="pk">Pakistan</option>
+      <option value="us">United States</option>
+      <option value="gb">United Kingdom</option>
+      <option value="ae">UAE</option>
+      <option value="in">India</option>
+    </select>
+    <span class="error" id="countryError"></span>
+  </div>
+
+  <!-- City -->
+  <div class="form-group">
+    <label for="city">City *</label>
+    <select id="city" onchange="validateCity()" disabled>
+      <option value="">-- Select Country First --</option>
+    </select>
+    <span class="error" id="cityError"></span>
+  </div>
+
+  <!-- Profile Image -->
+  <div class="form-group">
+    <label for="profileImg">Profile Image (Optional)</label>
+    <input type="file" id="profileImg" accept="image/*" onchange="previewImage(this)" />
+    <div id="imagePreview" class="image-preview">
+      <span>No image selected</span>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <button id="submitBtn" disabled onclick="submitForm()">Register</button>
+
+  <!-- Database note -->
+  <div class="note-box">
+    <strong>Note about saving data:</strong><br/>
+    Right now data is saved in <strong>localStorage</strong> (browser only — no real database).<br/>
+    To save to a real database you need a <strong>backend</strong> like PHP, Node.js, or Python + a database like MySQL or MongoDB. That is a separate step beyond this task.
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>✅ Registration Successful!</h3>
+    <div id="summaryContent"></div>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+  // ===== City Data =====
+  var cities = {
+    pk: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Peshawar"],
+    us: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"],
+    gb: ["London", "Manchester", "Birmingham", "Glasgow", "Leeds"],
+    ae: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Al Ain"],
+    in: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"]
+  };
+
+  // Track valid fields
+  var formValid = {
+    name: false,
+    email: false,
+    password: false,
+    phone: false,
+    dob: false,
+    country: false,
+    city: false
+  };
+
+  var savedImageURL = null;
+
+  // ===== Helper: show error =====
+  function showError(inputId, errorId, message) {
+    var input = document.getElementById(inputId);
+    var error = document.getElementById(errorId);
+    input.className = "invalid";
+    error.textContent = message;
+  }
+
+  // ===== Helper: show success =====
+  function showSuccess(inputId, errorId) {
+    var input = document.getElementById(inputId);
+    var error = document.getElementById(errorId);
+    input.className = "valid";
+    error.textContent = "";
+  }
+
+  // ===== Check all valid => enable button =====
+  function checkAllValid() {
+    var allValid = true;
+    for (var key in formValid) {
+      if (formValid[key] === false) {
+        allValid = false;
+        break;
+      }
+    }
+    document.getElementById("submitBtn").disabled = !allValid;
+  }
+
+  // ===== Validate Name =====
+  function validateName() {
+    var value = document.getElementById("name").value.trim();
+    if (value === "") {
+      showError("name", "nameError", "Name is required");
+      formValid.name = false;
+    } else if (value.length < 2) {
+      showError("name", "nameError", "Name must be at least 2 characters");
+      formValid.name = false;
+    } else {
+      showSuccess("name", "nameError");
+      formValid.name = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Validate Email =====
+  function validateEmail() {
+    var value = document.getElementById("email").value.trim();
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (value === "") {
+      showError("email", "emailError", "Email is required");
+      formValid.email = false;
+    } else if (!emailRegex.test(value)) {
+      showError("email", "emailError", "Enter a valid email (e.g. user@email.com)");
+      formValid.email = false;
+    } else {
+      showSuccess("email", "emailError");
+      formValid.email = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Validate Password =====
+  function validatePassword() {
+    var value = document.getElementById("password").value;
+
+    var score = 0;
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+
+    var colorMap = { 1: "weak", 2: "fair", 3: "good", 4: "strong" };
+    var labelMap = { 1: "Weak", 2: "Fair", 3: "Good", 4: "Strong" };
+
+    for (var i = 1; i <= 4; i++) {
+      var bar = document.getElementById("bar" + i);
+      bar.className = "bar";
+      if (value.length > 0 && i <= score) {
+        bar.className = "bar " + colorMap[score];
+      }
+    }
+
+    document.getElementById("strengthLabel").textContent =
+      value.length === 0 ? "" : "Strength: " + (labelMap[score] || "Weak");
+
+    if (value === "") {
+      showError("password", "passwordError", "Password is required");
+      formValid.password = false;
+    } else if (value.length < 8) {
+      showError("password", "passwordError", "At least 8 characters required");
+      formValid.password = false;
+    } else if (score < 2) {
+      showError("password", "passwordError", "Too weak — add uppercase or numbers");
+      formValid.password = false;
+    } else {
+      showSuccess("password", "passwordError");
+      formValid.password = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Validate Phone =====
+  function validatePhone() {
+    var value = document.getElementById("phone").value.trim();
+    var digits = value.replace(/\D/g, "");
+    if (value === "") {
+      showError("phone", "phoneError", "Phone number is required");
+      formValid.phone = false;
+    } else if (digits.length < 7 || digits.length > 15) {
+      showError("phone", "phoneError", "Enter a valid phone number");
+      formValid.phone = false;
+    } else {
+      showSuccess("phone", "phoneError");
+      formValid.phone = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Validate Date of Birth =====
+  function validateDob() {
+    var value = document.getElementById("dob").value;
+    if (value === "") {
+      showError("dob", "dobError", "Date of birth is required");
+      formValid.dob = false;
+      checkAllValid();
+      return;
+    }
+
+    var dob = new Date(value);
+    var today = new Date();
+    var age = today.getFullYear() - dob.getFullYear();
+    var m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+
+    if (age < 18) {
+      showError("dob", "dobError", "You must be at least 18 years old (you are " + age + ")");
+      formValid.dob = false;
+    } else {
+      showSuccess("dob", "dobError");
+      formValid.dob = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Load Cities =====
+  function loadCities() {
+    var country = document.getElementById("country").value;
+    var citySelect = document.getElementById("city");
+
+    citySelect.innerHTML = '<option value="">-- Select City --</option>';
+    formValid.city = false;
+
+    if (country && cities[country]) {
+      cities[country].forEach(function(cityName) {
+        var option = document.createElement("option");
+        option.value = cityName;
+        option.textContent = cityName;
+        citySelect.appendChild(option);
+      });
+      citySelect.disabled = false;
+      document.getElementById("cityError").textContent = "";
+    } else {
+      citySelect.disabled = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Validate Country =====
+  function validateCountry() {
+    var select = document.getElementById("country");
+    if (select.value === "") {
+      select.className = "invalid";
+      document.getElementById("countryError").textContent = "Please select a country";
+      formValid.country = false;
+    } else {
+      select.className = "";
+      document.getElementById("countryError").textContent = "";
+      formValid.country = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Validate City =====
+  function validateCity() {
+    var select = document.getElementById("city");
+    if (select.value === "") {
+      select.className = "invalid";
+      document.getElementById("cityError").textContent = "Please select a city";
+      formValid.city = false;
+    } else {
+      select.className = "";
+      document.getElementById("cityError").textContent = "";
+      formValid.city = true;
+    }
+    checkAllValid();
+  }
+
+  // ===== Image Preview =====
+  function previewImage(input) {
+    var file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File too large. Max 5MB.");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      savedImageURL = e.target.result;
+      document.getElementById("imagePreview").innerHTML =
+        '<img src="' + savedImageURL + '" alt="Preview" />';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ===== Submit Form =====
+  function submitForm() {
+    var countrySelect = document.getElementById("country");
+    var countryText = countrySelect.options[countrySelect.selectedIndex].text;
+
+    var data = {
+      name:    document.getElementById("name").value.trim(),
+      email:   document.getElementById("email").value.trim(),
+      phone:   document.getElementById("phone").value.trim(),
+      dob:     document.getElementById("dob").value,
+      country: countryText,
+      city:    document.getElementById("city").value,
+      avatar:  savedImageURL || null
+    };
+
+    // Save to localStorage
+    localStorage.setItem("reg_data", JSON.stringify(data));
+
+    // Show summary modal
+    showModal(data);
+  }
+
+  // ===== Show Modal =====
+  function showModal(data) {
+    var imgRow = data.avatar
+      ? '<tr><td>Photo</td><td><img src="' + data.avatar + '" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" /></td></tr>'
+      : "";
+
+    document.getElementById("summaryContent").innerHTML =
+      "<table>" +
+        "<tr><td>Name</td><td>" + data.name + "</td></tr>" +
+        "<tr><td>Email</td><td>" + data.email + "</td></tr>" +
+        "<tr><td>Phone</td><td>" + data.phone + "</td></tr>" +
+        "<tr><td>Date of Birth</td><td>" + data.dob + "</td></tr>" +
+        "<tr><td>Country</td><td>" + data.country + "</td></tr>" +
+        "<tr><td>City</td><td>" + data.city + "</td></tr>" +
+        imgRow +
+      "</table>";
+
+    document.getElementById("modalOverlay").style.display = "flex";
+  }
+
+  // ===== Close Modal =====
+  function closeModal() {
+    document.getElementById("modalOverlay").style.display = "none";
+  }
+
+  // ===== Auto-fill from localStorage =====
+  function autoFillForm() {
+    var raw = localStorage.getItem("reg_data");
+    if (!raw) return;
+    var d = JSON.parse(raw);
+
+    if (d.name)  { document.getElementById("name").value = d.name; validateName(); }
+    if (d.email) { document.getElementById("email").value = d.email; validateEmail(); }
+    if (d.phone) { document.getElementById("phone").value = d.phone; validatePhone(); }
+    if (d.dob)   { document.getElementById("dob").value = d.dob; validateDob(); }
+
+    // Country
+    var countrySelect = document.getElementById("country");
+    for (var i = 0; i < countrySelect.options.length; i++) {
+      if (countrySelect.options[i].text === d.country) {
+        countrySelect.value = countrySelect.options[i].value;
+        break;
+      }
+    }
+    loadCities();
+    validateCountry();
+
+    setTimeout(function() {
+      if (d.city) {
+        document.getElementById("city").value = d.city;
+        validateCity();
+      }
+    }, 100);
+
+    if (d.avatar) {
+      savedImageURL = d.avatar;
+      document.getElementById("imagePreview").innerHTML =
+        '<img src="' + d.avatar + '" alt="Preview" />';
+    }
+
+    document.getElementById("autofillBanner").classList.remove("show");
+  }
+
+  // ===== On Page Load =====
+  window.onload = function() {
+    // Set max DOB to 18 years ago
+    var maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() - 18);
+    document.getElementById("dob").max = maxDate.toISOString().split("T")[0];
+
+    // Show autofill banner if data exists
+    if (localStorage.getItem("reg_data")) {
+      document.getElementById("autofillBanner").classList.add("show");
+    }
+  };
+</script>
+
+</body>
+</html>
