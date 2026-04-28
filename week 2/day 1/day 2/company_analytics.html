@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Company Project Analytics</title>
+</head>
+<body>
+
+  <h1>Company Project Analytics Tool</h1>
+
+  <h2>1. Total Hours Worked Per Employee (Completed Tasks Only)</h2>
+  <div id="hours-section"></div>
+
+  <h2>2. Total Cost Per Project ($10 per hour)</h2>
+  <div id="cost-section"></div>
+
+  <h2>3. Most Hardworking Employee (Across All Projects)</h2>
+  <div id="hardworking-section"></div>
+
+  <h2>4. Projects Where At Least One Employee Has No Completed Tasks</h2>
+  <div id="incomplete-section"></div>
+
+  <h2>5. Bonus: Employees Who Worked On Multiple Projects (No Duplicates)</h2>
+  <div id="multi-project-section"></div>
+
+<script>
+
+  // ── PRESET DATA ─────────────────────────────────────────────────────────────
+  var projects = [
+    {
+      projectName: "Website Redesign",
+      budget: 5000,
+      employees: [
+        {
+          empId: "E001", name: "Ali Hassan",
+          tasks: [
+            { taskName: "Design Homepage",  hoursWorked: 8,  status: "completed" },
+            { taskName: "Fix Navbar",       hoursWorked: 3,  status: "completed" },
+            { taskName: "Write CSS",        hoursWorked: 5,  status: "pending"   },
+          ]
+        },
+        {
+          empId: "E002", name: "Sara Ahmed",
+          tasks: [
+            { taskName: "Content Writing",  hoursWorked: 6,  status: "completed" },
+            { taskName: "SEO Setup",        hoursWorked: 4,  status: "pending"   },
+          ]
+        },
+        {
+          empId: "E003", name: "Usman Raza",
+          tasks: [
+            { taskName: "Testing",          hoursWorked: 5,  status: "pending"   },
+            { taskName: "Bug Report",       hoursWorked: 2,  status: "pending"   },
+          ]
+        }
+      ]
+    },
+    {
+      projectName: "Mobile App",
+      budget: 8000,
+      employees: [
+        {
+          empId: "E001", name: "Ali Hassan",
+          tasks: [
+            { taskName: "Build Login Page", hoursWorked: 10, status: "completed" },
+            { taskName: "API Integration", hoursWorked: 7,  status: "completed" },
+          ]
+        },
+        {
+          empId: "E004", name: "Fatima Khan",
+          tasks: [
+            { taskName: "UI Design",        hoursWorked: 9,  status: "completed" },
+            { taskName: "Prototype",        hoursWorked: 6,  status: "completed" },
+            { taskName: "User Testing",     hoursWorked: 4,  status: "completed" },
+          ]
+        },
+        {
+          empId: "E005", name: "Bilal Siddiqui",
+          tasks: [
+            { taskName: "Backend Setup",    hoursWorked: 12, status: "completed" },
+            { taskName: "Database Design",  hoursWorked: 8,  status: "completed" },
+          ]
+        }
+      ]
+    },
+    {
+      projectName: "Data Dashboard",
+      budget: 3000,
+      employees: [
+        {
+          empId: "E002", name: "Sara Ahmed",
+          tasks: [
+            { taskName: "Data Collection",  hoursWorked: 5,  status: "completed" },
+            { taskName: "Chart Design",     hoursWorked: 7,  status: "completed" },
+          ]
+        },
+        {
+          empId: "E006", name: "Hira Malik",
+          tasks: [
+            { taskName: "Report Writing",   hoursWorked: 3,  status: "pending"   },
+            { taskName: "Presentation",     hoursWorked: 2,  status: "pending"   },
+          ]
+        }
+      ]
+    },
+    {
+      projectName: "ERP System",
+      budget: 12000,
+      employees: [
+        {
+          empId: "E005", name: "Bilal Siddiqui",
+          tasks: [
+            { taskName: "Module Setup",     hoursWorked: 15, status: "completed" },
+            { taskName: "Testing",          hoursWorked: 10, status: "completed" },
+          ]
+        },
+        {
+          empId: "E007", name: "Kamran Yousuf",
+          tasks: [
+            { taskName: "Documentation",    hoursWorked: 6,  status: "pending"   },
+            { taskName: "Training",         hoursWorked: 4,  status: "pending"   },
+          ]
+        }
+      ]
+    }
+  ];
+
+
+  // ── STEP 1: Total hours per employee (completed tasks only) ─────────────────
+  // We track each employee by empId to avoid counting duplicates across projects
+
+  var employeeHours = {};  // key = empId, value = { name, hours }
+
+  for (var i = 0; i < projects.length; i++) {
+    var project = projects[i];
+    for (var j = 0; j < project.employees.length; j++) {
+      var emp = project.employees[j];
+
+      if (employeeHours[emp.empId] == undefined) {
+        employeeHours[emp.empId] = { name: emp.name, hours: 0 };
+      }
+
+      for (var k = 0; k < emp.tasks.length; k++) {
+        var task = emp.tasks[k];
+        if (task.status == "completed") {
+          employeeHours[emp.empId].hours = employeeHours[emp.empId].hours + task.hoursWorked;
+        }
+      }
+    }
+  }
+
+  // Display as a table
+  var hoursHTML = "<table border='1' cellpadding='8'>";
+  hoursHTML += "<tr><th>Emp ID</th><th>Name</th><th>Total Hours (Completed)</th></tr>";
+  for (var id in employeeHours) {
+    hoursHTML += "<tr>";
+    hoursHTML += "<td>" + id + "</td>";
+    hoursHTML += "<td>" + employeeHours[id].name + "</td>";
+    hoursHTML += "<td>" + employeeHours[id].hours + " hrs</td>";
+    hoursHTML += "</tr>";
+  }
+  hoursHTML += "</table>";
+  document.getElementById("hours-section").innerHTML = hoursHTML;
+
+
+  // ── STEP 2: Total cost per project ($10 per completed hour) ─────────────────
+
+  var costHTML = "<table border='1' cellpadding='8'>";
+  costHTML += "<tr><th>Project Name</th><th>Total Hours (Completed)</th><th>Total Cost ($10/hr)</th><th>Budget</th></tr>";
+
+  for (var i = 0; i < projects.length; i++) {
+    var project = projects[i];
+    var projectHours = 0;
+
+    for (var j = 0; j < project.employees.length; j++) {
+      var emp = project.employees[j];
+      for (var k = 0; k < emp.tasks.length; k++) {
+        if (emp.tasks[k].status == "completed") {
+          projectHours = projectHours + emp.tasks[k].hoursWorked;
+        }
+      }
+    }
+
+    var cost = projectHours * 10;
+    costHTML += "<tr>";
+    costHTML += "<td>" + project.projectName + "</td>";
+    costHTML += "<td>" + projectHours + " hrs</td>";
+    costHTML += "<td>$" + cost + "</td>";
+    costHTML += "<td>$" + project.budget + "</td>";
+    costHTML += "</tr>";
+  }
+
+  costHTML += "</table>";
+  document.getElementById("cost-section").innerHTML = costHTML;
+
+
+  // ── STEP 3: Most hardworking employee (highest completed hours) ─────────────
+
+  var topEmpId = null;
+  var topHours = -1;
+
+  for (var id in employeeHours) {
+    if (employeeHours[id].hours > topHours) {
+      topHours = employeeHours[id].hours;
+      topEmpId = id;
+    }
+  }
+
+  var hardworkingHTML = "<p><b>Name:</b> " + employeeHours[topEmpId].name + "</p>";
+  hardworkingHTML += "<p><b>Emp ID:</b> " + topEmpId + "</p>";
+  hardworkingHTML += "<p><b>Total Completed Hours:</b> " + topHours + " hrs</p>";
+  document.getElementById("hardworking-section").innerHTML = hardworkingHTML;
+
+
+  // ── STEP 4: Projects where at least one employee has ZERO completed tasks ────
+
+  var incompleteProjects = [];
+
+  for (var i = 0; i < projects.length; i++) {
+    var project = projects[i];
+    var hasSlacker = false;
+
+    for (var j = 0; j < project.employees.length; j++) {
+      var emp = project.employees[j];
+      var completedCount = 0;
+
+      for (var k = 0; k < emp.tasks.length; k++) {
+        if (emp.tasks[k].status == "completed") {
+          completedCount = completedCount + 1;
+        }
+      }
+
+      if (completedCount == 0) {
+        hasSlacker = true;
+      }
+    }
+
+    if (hasSlacker) {
+      incompleteProjects.push(project.projectName);
+    }
+  }
+
+  if (incompleteProjects.length == 0) {
+    document.getElementById("incomplete-section").innerHTML = "<p>All projects have every employee with at least one completed task.</p>";
+  } else {
+    var incHTML = "<ul>";
+    for (var i = 0; i < incompleteProjects.length; i++) {
+      incHTML += "<li>" + incompleteProjects[i] + "</li>";
+    }
+    incHTML += "</ul>";
+    document.getElementById("incomplete-section").innerHTML = incHTML;
+  }
+
+
+  // ── STEP 5 (Bonus): Employees who worked on MORE than 1 project ─────────────
+  // Count how many projects each empId appears in
+
+  var empProjectCount = {};  // key = empId, value = { name, count }
+
+  for (var i = 0; i < projects.length; i++) {
+    var project = projects[i];
+    for (var j = 0; j < project.employees.length; j++) {
+      var emp = project.employees[j];
+
+      if (empProjectCount[emp.empId] == undefined) {
+        empProjectCount[emp.empId] = { name: emp.name, count: 0 };
+      }
+
+      empProjectCount[emp.empId].count = empProjectCount[emp.empId].count + 1;
+    }
+  }
+
+  var multiList = [];
+  for (var id in empProjectCount) {
+    if (empProjectCount[id].count > 1) {
+      multiList.push(empProjectCount[id].name + " (" + id + ") — " + empProjectCount[id].count + " projects");
+    }
+  }
+
+  if (multiList.length == 0) {
+    document.getElementById("multi-project-section").innerHTML = "<p>No employee worked on multiple projects.</p>";
+  } else {
+    var multiHTML = "<ul>";
+    for (var i = 0; i < multiList.length; i++) {
+      multiHTML += "<li>" + multiList[i] + "</li>";
+    }
+    multiHTML += "</ul>";
+    document.getElementById("multi-project-section").innerHTML = multiHTML;
+  }
+
+</script>
+</body>
+</html>

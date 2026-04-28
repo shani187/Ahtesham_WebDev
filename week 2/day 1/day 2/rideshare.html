@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ride Sharing Analytics</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    h2 {
+      color: #555;
+      margin-top: 30px;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      margin-top: 10px;
+    }
+
+    th {
+      background: #4CAF50;
+      color: white;
+      padding: 10px;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {
+      background: #f9f9f9;
+    }
+
+    .box {
+      background: white;
+      padding: 15px 20px;
+      margin-top: 10px;
+      border-left: 5px solid #4CAF50;
+      border-radius: 4px;
+    }
+
+    .box p {
+      margin: 5px 0;
+      color: #333;
+    }
+
+    .warning {
+      border-left-color: #e74c3c;
+    }
+
+    .elite {
+      border-left-color: #f39c12;
+    }
+
+    ul {
+      margin: 5px 0;
+      padding-left: 20px;
+      color: #333;
+    }
+
+    ul li {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1> Ride Sharing Driver Analytics</h1>
+
+  <!-- 1. All Drivers Table -->
+  <h2> Driver Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Driver Name</th>
+        <th>Completed Rides</th>
+        <th>Total Earnings (₨)</th>
+        <th>Average Rating</th>
+      </tr>
+    </thead>
+    <tbody id="driver-table"></tbody>
+  </table>
+
+  <!-- 2. Top Earner -->
+  <h2>Highest Earning Driver</h2>
+  <div class="box" id="top-earner"></div>
+
+  <!-- 3. Elite Drivers -->
+  <h2> Elite Drivers (5+ rides & rating > 4.5)</h2>
+  <div class="box elite" id="elite-drivers"></div>
+
+  <!-- 4. Bonus: All Rides Incomplete -->
+  <h2> Drivers With No Completed Rides (Bonus)</h2>
+  <div class="box warning" id="incomplete-drivers"></div>
+
+<script>
+
+  // ── PRESET DATA ──────────────────────────────────────────
+  const drivers = [
+    {
+      driverId: "D001", name: "Ayaan Khan",
+      rides: [
+        { distance: 12, fare: 320, rating: 4.8, completed: true },
+        { distance: 7,  fare: 180, rating: 4.5, completed: true },
+        { distance: 15, fare: 400, rating: 4.9, completed: true },
+        { distance: 9,  fare: 230, rating: 4.7, completed: true },
+        { distance: 6,  fare: 150, rating: 4.6, completed: true },
+        { distance: 11, fare: 290, rating: 4.8, completed: true },
+      ]
+    },
+    {
+      driverId: "D002", name: "Sadia Mirza",
+      rides: [
+        { distance: 8,  fare: 200, rating: 4.2, completed: true },
+        { distance: 20, fare: 520, rating: 4.6, completed: true },
+        { distance: 5,  fare: 120, rating: 3.8, completed: false },
+        { distance: 14, fare: 360, rating: 4.4, completed: true },
+        { distance: 10, fare: 250, rating: 4.5, completed: true },
+      ]
+    },
+    {
+      driverId: "D003", name: "Bilal Akhtar",
+      rides: [
+        { distance: 3, fare: 80,  rating: 3.2, completed: false },
+        { distance: 6, fare: 160, rating: 3.5, completed: false },
+        { distance: 9, fare: 0,   rating: 2.9, completed: false },
+      ]
+    },
+    {
+      driverId: "D004", name: "Nida Farooq",
+      rides: [
+        { distance: 18, fare: 480, rating: 5.0, completed: true },
+        { distance: 22, fare: 600, rating: 4.9, completed: true },
+        { distance: 13, fare: 340, rating: 4.8, completed: true },
+        { distance: 16, fare: 420, rating: 5.0, completed: true },
+        { distance: 10, fare: 260, rating: 4.7, completed: true },
+        { distance: 8,  fare: 200, rating: 4.9, completed: true },
+        { distance: 5,  fare: 130, rating: 4.6, completed: true },
+      ]
+    },
+    {
+      driverId: "D005", name: "Omar Shaikh",
+      rides: [
+        { distance: 7,  fare: 190, rating: 4.0, completed: true },
+        { distance: 12, fare: 310, rating: 3.9, completed: true },
+        { distance: 4,  fare: 100, rating: 0,   completed: false },
+        { distance: 9,  fare: 230, rating: 4.1, completed: true },
+      ]
+    },
+    {
+      driverId: "D006", name: "Hina Javed",
+      rides: [
+        { distance: 25, fare: 650, rating: 4.7, completed: true },
+        { distance: 18, fare: 470, rating: 4.8, completed: true },
+        { distance: 11, fare: 280, rating: 4.6, completed: true },
+        { distance: 14, fare: 360, rating: 4.9, completed: true },
+        { distance: 20, fare: 520, rating: 4.7, completed: true },
+        { distance: 7,  fare: 0,   rating: 0,   completed: false },
+      ]
+    },
+  ];
+
+  // ── STEP 1: Calculate earnings and avg rating per driver ──
+  var summaries = [];
+
+  for (var i = 0; i < drivers.length; i++) {
+    var driver = drivers[i];
+    var totalEarnings = 0;
+    var totalRating = 0;
+    var completedCount = 0;
+    var allIncomplete = true;
+
+    for (var j = 0; j < driver.rides.length; j++) {
+      var ride = driver.rides[j];
+      if (ride.completed == true) {
+        totalEarnings = totalEarnings + ride.fare;
+        totalRating = totalRating + ride.rating;
+        completedCount = completedCount + 1;
+        allIncomplete = false;
+      }
+    }
+
+    var avgRating = 0;
+    if (completedCount > 0) {
+      avgRating = totalRating / completedCount;
+      avgRating = Math.round(avgRating * 100) / 100; // round to 2 decimals
+    }
+
+    summaries.push({
+      name: driver.name,
+      completedCount: completedCount,
+      totalEarnings: totalEarnings,
+      avgRating: avgRating,
+      allIncomplete: allIncomplete
+    });
+  }
+
+  // ── STEP 2: Fill the table ──
+  var tbody = document.getElementById("driver-table");
+  for (var i = 0; i < summaries.length; i++) {
+    var s = summaries[i];
+    var row = "<tr>";
+    row += "<td>" + s.name + "</td>";
+    row += "<td>" + s.completedCount + "</td>";
+    row += "<td>₨" + s.totalEarnings + "</td>";
+    row += "<td>" + (s.avgRating > 0 ? s.avgRating : "N/A") + "</td>";
+    row += "</tr>";
+    tbody.innerHTML += row;
+  }
+
+  // ── STEP 3: Find the highest earner ──
+  var topEarner = summaries[0];
+  for (var i = 1; i < summaries.length; i++) {
+    if (summaries[i].totalEarnings > topEarner.totalEarnings) {
+      topEarner = summaries[i];
+    }
+  }
+
+  document.getElementById("top-earner").innerHTML =
+    "<p><strong>Name:</strong> " + topEarner.name + "</p>" +
+    "<p><strong>Total Earnings:</strong> ₨" + topEarner.totalEarnings + "</p>" +
+    "<p><strong>Completed Rides:</strong> " + topEarner.completedCount + "</p>" +
+    "<p><strong>Avg Rating:</strong> " + topEarner.avgRating + "</p>";
+
+  // ── STEP 4: Elite drivers (5+ completed rides AND avg rating > 4.5) ──
+  var eliteList = [];
+  for (var i = 0; i < summaries.length; i++) {
+    if (summaries[i].completedCount >= 5 && summaries[i].avgRating > 4.5) {
+      eliteList.push(summaries[i].name);
+    }
+  }
+
+  if (eliteList.length == 0) {
+    document.getElementById("elite-drivers").innerHTML = "<p>No elite drivers found.</p>";
+  } else {
+    var html = "<ul>";
+    for (var i = 0; i < eliteList.length; i++) {
+      html += "<li>" + eliteList[i] + "</li>";
+    }
+    html += "</ul>";
+    document.getElementById("elite-drivers").innerHTML = html;
+  }
+
+  // ── STEP 5 (Bonus): Drivers where ALL rides are incomplete ──
+  var incompleteList = [];
+  for (var i = 0; i < summaries.length; i++) {
+    if (summaries[i].allIncomplete == true) {
+      incompleteList.push(summaries[i].name);
+    }
+  }
+
+  if (incompleteList.length == 0) {
+    document.getElementById("incomplete-drivers").innerHTML = "<p>All drivers have at least one completed ride.</p>";
+  } else {
+    var html = "<ul>";
+    for (var i = 0; i < incompleteList.length; i++) {
+      html += "<li>" + incompleteList[i] + "</li>";
+    }
+    html += "</ul>";
+    document.getElementById("incomplete-drivers").innerHTML = html;
+  }
+
+</script>
+</body>
+</html>
