@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopEase - Browse Products</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar injected by JS -->
+  <div id="navbar-placeholder"></div>
+
+  <!-- Hero banner -->
+  <div class="page-hero">
+    <div class="container">
+      <h1>Explore Our Collection</h1>
+      <p>Handpicked products, curated just for you</p>
+    </div>
+  </div>
+
+  <!-- Products -->
+  <main class="page-main">
+    <div class="container">
+      <div class="section-header">
+        <h2>All Products</h2>
+        <span class="product-count" id="product-count"></span>
+      </div>
+      <div class="product-grid" id="product-grid">
+        <!-- Cards rendered by JS -->
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2024 <span>ShopEase</span>. Built with ❤️ for your shopping needs.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>initHomePage();</script>
+</body>
+</html>
